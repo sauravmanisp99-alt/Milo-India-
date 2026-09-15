@@ -35,6 +35,7 @@
     .back {
       position: absolute;
       top: 25px;
+      left: 20px;
       border: none;
       background: transparent;
       font-size: 28px;
@@ -79,15 +80,14 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 12px;
     }
 
-    .google-button:hover {
-      background: #f9fafb;
+    .google-button:active {
+      transform: scale(0.98);
     }
 
     .google-button:disabled {
@@ -96,8 +96,6 @@
     }
 
     .google-icon {
-      width: 22px;
-      height: 22px;
       font-size: 20px;
       font-weight: bold;
     }
@@ -125,7 +123,7 @@
 
   <main class="app">
 
-    <button class="back" onclick="goBack()" aria-label="Go back">
+    <button id="backButton" class="back" aria-label="Go back">
       ←
     </button>
 
@@ -133,19 +131,13 @@
       M
     </div>
 
-    <h1>
-      Welcome to Milo
-    </h1>
+    <h1>Welcome to Milo</h1>
 
     <p class="subtitle">
       Sign in with your Google Account to start meeting new people.
     </p>
 
-    <button
-      id="googleLoginButton"
-      class="google-button"
-      onclick="loginWithGoogle()"
-    >
+    <button id="googleLoginButton" class="google-button">
       <span class="google-icon">G</span>
       <span>Continue with Google</span>
     </button>
@@ -158,7 +150,6 @@
     </p>
 
   </main>
-
 
   <script type="module">
 
@@ -176,8 +167,6 @@
       from "./firebase-config.js";
 
 
-    // Initialize Firebase
-
     const app = initializeApp(firebaseConfig);
 
     const auth = getAuth(app);
@@ -185,25 +174,24 @@
     const provider = new GoogleAuthProvider();
 
 
-    // Elements
-
     const googleButton =
       document.getElementById("googleLoginButton");
 
     const message =
       document.getElementById("message");
 
+    const backButton =
+      document.getElementById("backButton");
 
-    // Google Login
 
-    window.loginWithGoogle = async function () {
+    googleButton.addEventListener("click", async function () {
 
       googleButton.disabled = true;
 
       googleButton.innerHTML =
         "<span>Signing in...</span>";
 
-      message.textContent = "";
+      message.textContent = "Opening Google...";
 
 
       try {
@@ -213,13 +201,9 @@
 
         const user = result.user;
 
-
         console.log("Google login successful");
-
         console.log("User ID:", user.uid);
-
         console.log("Name:", user.displayName);
-
         console.log("Email:", user.email);
 
 
@@ -229,8 +213,7 @@
 
         setTimeout(function () {
 
-          window.location.href =
-            "profile.html";
+          window.location.href = "profile.html";
 
         }, 800);
 
@@ -238,7 +221,6 @@
       } catch (error) {
 
         console.error("Google Login Error:", error);
-
 
         googleButton.disabled = false;
 
@@ -257,7 +239,7 @@
         else if (error.code === "auth/popup-blocked") {
 
           message.textContent =
-            "Google login popup was blocked. Please allow popups.";
+            "Google popup was blocked. Allow popups and try again.";
 
         }
 
@@ -271,23 +253,20 @@
         else {
 
           message.textContent =
-            "Google login failed. Please try again.";
+            "Google login failed: " + error.code;
 
         }
 
       }
 
-    };
+    });
 
 
-    // Back button
+    backButton.addEventListener("click", function () {
 
-    window.goBack = function () {
+      window.location.href = "index.html";
 
-      window.location.href =
-        "index.html";
-
-    };
+    });
 
   </script>
 
