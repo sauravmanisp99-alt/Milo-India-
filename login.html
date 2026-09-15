@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Milo India - Login</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      background: #f5f7fb;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: white;
+      padding: 35px 25px;
+    }
+
+    .back {
+      border: none;
+      background: none;
+      font-size: 28px;
+      cursor: pointer;
+      margin-bottom: 35px;
+    }
+
+    .logo {
+      width: 70px;
+      height: 70px;
+      border-radius: 20px;
+      background: #111827;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      color: #111827;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      color: #374151;
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .phone-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .country {
+      width: 75px;
+      padding: 15px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      background: #f9fafb;
+      font-size: 15px;
+    }
+
+    input {
+      flex: 1;
+      padding: 15px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #111827;
+    }
+
+    button.action {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #111827;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.action:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #otpSection {
+      display: none;
+      margin-top: 25px;
+    }
+
+    #recaptcha-container {
+      margin: 20px 0;
+    }
+
+    .message {
+      margin-top: 15px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #374151;
+    }
+
+    .small {
+      margin-top: 25px;
+      color: #9ca3af;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <button class="back" onclick="goBack()">←</button>
+
+    <div class="logo">M</div>
+
+    <h1>Welcome to Milo</h1>
+
+    <p class="subtitle">
+      Enter your Indian mobile number to continue.
+    </p>
+
+    <label for="phone">Mobile Number</label>
+
+    <div class="phone-box">
+      <div class="country">🇮🇳 +91</div>
+      <input
+        id="phone"
+        type="tel"
+        maxlength="10"
+        placeholder="10-digit mobile number"
+      >
+    </div>
+
+    <div id="recaptcha-container"></div>
+
+    <button id="sendOtpBtn" class="action" onclick="sendOTP()">
+      Send OTP
+    </button>
+
+    <section id="otpSection">
+
+      <label for="otp">Enter OTP</label>
+
+      <input
+        id="otp"
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="6-digit OTP"
+      >
+
+      <br><br>
+
+      <button class="action" onclick="verifyOTP()">
+        Verify OTP
+      </button>
+
+    </section>
+
+    <p id="message" class="message"></p>
+
+    <p class="small">
+      By continuing, you agree to use Milo responsibly and follow
+      our safety and community guidelines.
+    </p>
+
+  </main>
+
+  <script>
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
+    function sendOTP() {
+      document.getElementById("message").textContent =
+        "OTP system will be connected in the next step.";
+    }
+
+    function verifyOTP() {
+      document.getElementById("message").textContent =
+        "OTP verification will be connected in the next step.";
+    }
+  </script>
+
+</body>
+</html>
