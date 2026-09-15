@@ -90,6 +90,7 @@
       right: 0;
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 14px;
       z-index: 10;
     }
@@ -107,6 +108,22 @@
 
     .control.off {
       background: #555;
+    }
+
+    .next {
+      height: 54px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 28px;
+      background: white;
+      color: #111827;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .next:disabled {
+      opacity: 0.6;
     }
 
     .end {
@@ -195,6 +212,12 @@
       </button>
 
       <button
+        id="nextButton"
+        class="next">
+        Next →
+      </button>
+
+      <button
         id="endButton"
         class="end">
         ☎
@@ -220,8 +243,8 @@
 
     import {
       getFirestore,
-      doc,
       getDoc,
+      doc,
       updateDoc,
       collection,
       addDoc,
@@ -250,30 +273,26 @@
     const localVideo =
       document.getElementById("localVideo");
 
-
     const remoteVideo =
       document.getElementById("remoteVideo");
-
 
     const status =
       document.getElementById("status");
 
-
     const timer =
       document.getElementById("timer");
-
 
     const micButton =
       document.getElementById("micButton");
 
-
     const cameraButton =
       document.getElementById("cameraButton");
 
+    const nextButton =
+      document.getElementById("nextButton");
 
     const endButton =
       document.getElementById("endButton");
-
 
     const backButton =
       document.getElementById("backButton");
@@ -306,6 +325,8 @@
     let callUnsubscribe = null;
 
     let candidateUnsubscribe = null;
+
+    let leavingCall = false;
 
 
     const rtcConfig = {
@@ -504,12 +525,6 @@
             peerConnection.connectionState;
 
 
-          console.log(
-            "Connection state:",
-            state
-          );
-
-
           if (state === "connected") {
 
             status.textContent =
@@ -534,8 +549,12 @@
             state === "closed"
           ) {
 
-            status.textContent =
-              "Call ended";
+            if (!leavingCall) {
+
+              status.textContent =
+                "Call ended";
+
+            }
 
           }
 
@@ -784,15 +803,11 @@
                   }
 
 
-                  const data =
-                    change.doc.data();
-
-
                   try {
 
                     await peerConnection.addIceCandidate(
                       new RTCIceCandidate(
-                        data
+                        change.doc.data()
                       )
                     );
 
@@ -843,15 +858,11 @@
                   }
 
 
-                  const data =
-                    change.doc.data();
-
-
                   try {
 
                     await peerConnection.addIceCandidate(
                       new RTCIceCandidate(
-                        data
+                        change.doc.data()
                       )
                     );
 
@@ -920,12 +931,9 @@
         }
 
 
-        const tracks =
-          localStream.getAudioTracks();
-
-
-        tracks.forEach(
-          function(track) {
+        localStream
+          .getAudioTracks()
+          .forEach(function(track) {
 
             track.enabled =
               !track.enabled;
@@ -936,8 +944,7 @@
               !track.enabled
             );
 
-          }
-        );
+          });
 
       }
     );
@@ -952,12 +959,9 @@
         }
 
 
-        const tracks =
-          localStream.getVideoTracks();
-
-
-        tracks.forEach(
-          function(track) {
+        localStream
+          .getVideoTracks()
+          .forEach(function(track) {
 
             track.enabled =
               !track.enabled;
@@ -968,12 +972,13 @@
               !track.enabled
             );
 
-          }
-        );
+          });
 
       }
     );
 
+
+    /* END CALL */
 
     endButton.addEventListener(
       "click",
@@ -984,6 +989,37 @@
       }
     );
 
+
+    /* NEXT */
+
+    nextButton.addEventListener(
+      "click",
+      async function() {
+
+        if (leavingCall) {
+          return;
+        }
+
+
+        leavingCall = true;
+
+        nextButton.disabled = true;
+
+        nextButton.textContent =
+          "Next...";
+
+
+        await finishCurrentCall();
+
+
+        window.location.href =
+          "home.html";
+
+      }
+    );
+
+
+    /* BACK */
 
     backButton.addEventListener(
       "click",
@@ -996,6 +1032,25 @@
 
 
     async function endCall() {
+
+      if (leavingCall) {
+        return;
+      }
+
+
+      leavingCall = true;
+
+
+      await finishCurrentCall();
+
+
+      window.location.href =
+        "home.html";
+
+    }
+
+
+    async function finishCurrentCall() {
 
       try {
 
@@ -1018,9 +1073,6 @@
 
 
       cleanup();
-
-      window.location.href =
-        "home.html";
 
     }
 
@@ -1060,13 +1112,11 @@
 
         localStream
           .getTracks()
-          .forEach(
-            function(track) {
+          .forEach(function(track) {
 
-              track.stop();
+            track.stop();
 
-            }
-          );
+          });
 
         localStream = null;
 
@@ -1080,6 +1130,11 @@
         peerConnection = null;
 
       }
+
+
+      remoteVideo.srcObject = null;
+
+      localVideo.srcObject = null;
 
     }
 
