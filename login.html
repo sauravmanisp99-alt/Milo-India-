@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Milo India - Login</title>
+  <title>Milo India - Google Login</title>
 
   <style>
     * {
@@ -25,118 +25,98 @@
       width: 100%;
       max-width: 430px;
       min-height: 100vh;
-      background: white;
-      padding: 35px 25px;
+      background: #ffffff;
+      padding: 30px 25px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .back {
+      position: absolute;
+      top: 25px;
       border: none;
-      background: none;
+      background: transparent;
       font-size: 28px;
       cursor: pointer;
-      margin-bottom: 35px;
+      color: #111827;
     }
 
     .logo {
-      width: 70px;
-      height: 70px;
-      border-radius: 20px;
+      width: 80px;
+      height: 80px;
+      border-radius: 22px;
       background: #111827;
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 38px;
       font-weight: bold;
       margin-bottom: 25px;
     }
 
     h1 {
       color: #111827;
-      font-size: 28px;
+      font-size: 30px;
       margin-bottom: 10px;
     }
 
     .subtitle {
       color: #6b7280;
-      line-height: 1.5;
-      margin-bottom: 30px;
-    }
-
-    label {
-      display: block;
-      color: #374151;
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
-    .phone-box {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .country {
-      width: 75px;
-      padding: 15px 8px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      background: #f9fafb;
-      font-size: 15px;
-    }
-
-    input {
-      flex: 1;
-      padding: 15px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
       font-size: 16px;
-      outline: none;
+      line-height: 1.5;
+      margin-bottom: 35px;
     }
 
-    input:focus {
-      border-color: #111827;
-    }
-
-    button.action {
+    .google-button {
       width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 12px;
-      background: #111827;
-      color: white;
+      min-height: 54px;
+      border: 1px solid #d1d5db;
+      border-radius: 13px;
+      background: #ffffff;
+      color: #111827;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
     }
 
-    button.action:disabled {
+    .google-button:hover {
+      background: #f9fafb;
+    }
+
+    .google-button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
 
-    #otpSection {
-      display: none;
-      margin-top: 25px;
-    }
-
-    #recaptcha-container {
-      margin: 20px 0;
+    .google-icon {
+      width: 22px;
+      height: 22px;
+      font-size: 20px;
+      font-weight: bold;
     }
 
     .message {
-      margin-top: 15px;
+      margin-top: 20px;
+      min-height: 22px;
+      text-align: center;
+      color: #374151;
       font-size: 14px;
       line-height: 1.5;
-      color: #374151;
     }
 
     .small {
-      margin-top: 25px;
+      margin-top: 30px;
       color: #9ca3af;
       font-size: 12px;
       line-height: 1.5;
+      text-align: center;
     }
   </style>
 </head>
@@ -145,53 +125,30 @@
 
   <main class="app">
 
-    <button class="back" onclick="goBack()">←</button>
-
-    <div class="logo">M</div>
-
-    <h1>Welcome to Milo</h1>
-
-    <p class="subtitle">
-      Enter your Indian mobile number to continue.
-    </p>
-
-    <label for="phone">Mobile Number</label>
-
-    <div class="phone-box">
-      <div class="country">🇮🇳 +91</div>
-      <input
-        id="phone"
-        type="tel"
-        maxlength="10"
-        placeholder="10-digit mobile number"
-      >
-    </div>
-
-    <div id="recaptcha-container"></div>
-
-    <button id="sendOtpBtn" class="action" onclick="sendOTP()">
-      Send OTP
+    <button class="back" onclick="goBack()" aria-label="Go back">
+      ←
     </button>
 
-    <section id="otpSection">
+    <div class="logo">
+      M
+    </div>
 
-      <label for="otp">Enter OTP</label>
+    <h1>
+      Welcome to Milo
+    </h1>
 
-      <input
-        id="otp"
-        type="text"
-        inputmode="numeric"
-        maxlength="6"
-        placeholder="6-digit OTP"
-      >
+    <p class="subtitle">
+      Sign in with your Google Account to start meeting new people.
+    </p>
 
-      <br><br>
-
-      <button class="action" onclick="verifyOTP()">
-        Verify OTP
-      </button>
-
-    </section>
+    <button
+      id="googleLoginButton"
+      class="google-button"
+      onclick="loginWithGoogle()"
+    >
+      <span class="google-icon">G</span>
+      <span>Continue with Google</span>
+    </button>
 
     <p id="message" class="message"></p>
 
@@ -202,20 +159,136 @@
 
   </main>
 
-  <script>
-    function goBack() {
-      window.location.href = "index.html";
-    }
 
-    function sendOTP() {
-      document.getElementById("message").textContent =
-        "OTP system will be connected in the next step.";
-    }
+  <script type="module">
 
-    function verifyOTP() {
-      document.getElementById("message").textContent =
-        "OTP verification will be connected in the next step.";
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup
     }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+    import { firebaseConfig }
+      from "./firebase-config.js";
+
+
+    // Initialize Firebase
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    const provider = new GoogleAuthProvider();
+
+
+    // Elements
+
+    const googleButton =
+      document.getElementById("googleLoginButton");
+
+    const message =
+      document.getElementById("message");
+
+
+    // Google Login
+
+    window.loginWithGoogle = async function () {
+
+      googleButton.disabled = true;
+
+      googleButton.innerHTML =
+        "<span>Signing in...</span>";
+
+      message.textContent = "";
+
+
+      try {
+
+        const result =
+          await signInWithPopup(auth, provider);
+
+        const user = result.user;
+
+
+        console.log("Google login successful");
+
+        console.log("User ID:", user.uid);
+
+        console.log("Name:", user.displayName);
+
+        console.log("Email:", user.email);
+
+
+        message.textContent =
+          "Login successful. Opening profile...";
+
+
+        setTimeout(function () {
+
+          window.location.href =
+            "profile.html";
+
+        }, 800);
+
+
+      } catch (error) {
+
+        console.error("Google Login Error:", error);
+
+
+        googleButton.disabled = false;
+
+        googleButton.innerHTML =
+          '<span class="google-icon">G</span>' +
+          '<span>Continue with Google</span>';
+
+
+        if (error.code === "auth/popup-closed-by-user") {
+
+          message.textContent =
+            "Google login was cancelled.";
+
+        }
+
+        else if (error.code === "auth/popup-blocked") {
+
+          message.textContent =
+            "Google login popup was blocked. Please allow popups.";
+
+        }
+
+        else if (error.code === "auth/unauthorized-domain") {
+
+          message.textContent =
+            "This website is not authorized in Firebase.";
+
+        }
+
+        else {
+
+          message.textContent =
+            "Google login failed. Please try again.";
+
+        }
+
+      }
+
+    };
+
+
+    // Back button
+
+    window.goBack = function () {
+
+      window.location.href =
+        "index.html";
+
+    };
+
   </script>
 
 </body>
