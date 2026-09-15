@@ -82,6 +82,7 @@
 
     .random-btn:disabled {
       opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .section-title {
@@ -200,7 +201,9 @@
       collection,
       query,
       where,
-      onSnapshot
+      onSnapshot,
+      addDoc,
+      serverTimestamp
     }
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
@@ -208,11 +211,14 @@
       from "./firebase-config.js";
 
 
-    const app = initializeApp(firebaseConfig);
+    const app =
+      initializeApp(firebaseConfig);
 
-    const auth = getAuth(app);
+    const auth =
+      getAuth(app);
 
-    const db = getFirestore(app);
+    const db =
+      getFirestore(app);
 
 
     const usersContainer =
@@ -230,33 +236,39 @@
     let onlineUsers = [];
 
 
-    onAuthStateChanged(auth, function(user) {
+    onAuthStateChanged(
+      auth,
+      function(user) {
 
-      if (!user) {
+        if (!user) {
 
-        window.location.href = "login.html";
+          window.location.href =
+            "login.html";
 
-        return;
+          return;
+
+        }
+
+        currentUser = user;
+
+        loadOnlineUsers();
 
       }
-
-      currentUser = user;
-
-      loadOnlineUsers();
-
-    });
+    );
 
 
     function loadOnlineUsers() {
 
-      const usersQuery = query(
-        collection(db, "users"),
-        where("online", "==", true)
-      );
+      const usersQuery =
+        query(
+          collection(db, "users"),
+          where("online", "==", true)
+        );
 
 
       onSnapshot(
         usersQuery,
+
         function(snapshot) {
 
           onlineUsers = [];
@@ -264,27 +276,31 @@
           usersContainer.innerHTML = "";
 
 
-          snapshot.forEach(function(doc) {
+          snapshot.forEach(
+            function(userDoc) {
 
-            const data = doc.data();
+              const data =
+                userDoc.data();
 
 
-            if (doc.id === currentUser.uid) {
-              return;
+              if (userDoc.id === currentUser.uid) {
+                return;
+              }
+
+
+              if (!data.age || data.age < 18) {
+                return;
+              }
+
+
+              onlineUsers.push({
+                id: userDoc.id,
+                ...data
+              });
+
+
             }
-
-
-            if (!data.age || data.age < 18) {
-              return;
-            }
-
-
-            onlineUsers.push({
-              id: doc.id,
-              ...data
-            });
-
-          });
+          );
 
 
           if (onlineUsers.length === 0) {
@@ -299,42 +315,47 @@
           }
 
 
-          onlineUsers.forEach(function(user) {
+          onlineUsers.forEach(
+            function(user) {
 
-            const card =
-              document.createElement("div");
-
-            card.className = "user-card";
-
-
-            card.innerHTML =
-
-              '<div class="user-info">' +
-
-              '<h3>' +
-              "Milo User" +
-              '</h3>' +
-
-              '<p>' +
-              user.age +
-              " • " +
-              user.gender +
-              " • " +
-              user.country +
-              '</p>' +
-
-              '</div>' +
-
-              '<div class="online">' +
-              '● Online' +
-              '</div>';
+              const card =
+                document.createElement("div");
 
 
-            usersContainer.appendChild(card);
+              card.className =
+                "user-card";
 
-          });
+
+              card.innerHTML =
+
+                '<div class="user-info">' +
+
+                '<h3>' +
+                "Milo User" +
+                '</h3>' +
+
+                '<p>' +
+                user.age +
+                " • " +
+                user.gender +
+                " • " +
+                user.country +
+                '</p>' +
+
+                '</div>' +
+
+                '<div class="online">' +
+                '● Online' +
+                '</div>';
+
+
+              usersContainer.appendChild(card);
+
+            }
+          );
 
         },
+
 
         function(error) {
 
@@ -342,6 +363,7 @@
             "Online Users Error:",
             error
           );
+
 
           message.textContent =
             "Could not load online people.";
@@ -354,7 +376,17 @@
 
     randomButton.addEventListener(
       "click",
-      function() {
+      async function() {
+
+        if (!currentUser) {
+
+          message.textContent =
+            "Please wait...";
+
+          return;
+
+        }
+
 
         if (onlineUsers.length === 0) {
 
@@ -376,19 +408,73 @@
           onlineUsers[randomIndex];
 
 
+        randomButton.disabled = true;
+
+        randomButton.textContent =
+          "Finding a person...";
+
         message.textContent =
-          "Finding a video call...";
+          "Creating video call...";
 
 
-        /*
-          Matching/call system will be connected
-          in the next step.
-        */
+        try {
 
-        console.log(
-          "Selected user:",
-          selectedUser
-        );
+          const callData = {
+
+            callerId:
+              currentUser.uid,
+
+            receiverId:
+              selectedUser.id,
+
+            status:
+              "ringing",
+
+            createdAt:
+              serverTimestamp()
+
+          };
+
+
+          const callRef =
+            await addDoc(
+              collection(db, "calls"),
+              callData
+            );
+
+
+          console.log(
+            "Call created:",
+            callRef.id
+          );
+
+
+          window.location.href =
+            "call.html?callId=" +
+            encodeURIComponent(callRef.id) +
+            "&role=caller";
+
+
+        } catch (error) {
+
+          console.error(
+            "Create Call Error:",
+            error
+          );
+
+
+          randomButton.disabled =
+            false;
+
+
+          randomButton.textContent =
+            "🎥 Start Random Video Call";
+
+
+          message.textContent =
+            "Could not create video call. Please try again.";
+
+        }
 
       }
     );
