@@ -82,7 +82,6 @@
 
     .random-btn:disabled {
       opacity: 0.6;
-      cursor: not-allowed;
     }
 
     .section-title {
@@ -138,6 +137,84 @@
       margin-top: 18px;
       min-height: 20px;
     }
+
+
+    /* INCOMING CALL */
+
+    .incoming {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .incoming.show {
+      display: flex;
+    }
+
+    .incoming-box {
+      width: 100%;
+      max-width: 360px;
+      background: white;
+      border-radius: 22px;
+      padding: 28px 22px;
+      text-align: center;
+    }
+
+    .incoming-icon {
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      background: #111827;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      font-size: 30px;
+    }
+
+    .incoming-box h2 {
+      color: #111827;
+      font-size: 23px;
+      margin-bottom: 8px;
+    }
+
+    .incoming-box p {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
+
+    .incoming-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .incoming-buttons button {
+      flex: 1;
+      height: 52px;
+      border: none;
+      border-radius: 13px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .decline {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .accept {
+      background: #16a34a;
+      color: white;
+    }
+
   </style>
 </head>
 
@@ -159,7 +236,9 @@
         Start a random 1-to-1 video call with another online user.
       </p>
 
-      <button id="randomButton" class="random-btn">
+      <button
+        id="randomButton"
+        class="random-btn">
         🎥 Start Random Video Call
       </button>
 
@@ -171,7 +250,9 @@
     </h2>
 
 
-    <section id="users" class="users">
+    <section
+      id="users"
+      class="users">
 
       <div class="empty">
         Finding online people...
@@ -180,9 +261,53 @@
     </section>
 
 
-    <p id="message" class="message"></p>
+    <p
+      id="message"
+      class="message">
+    </p>
 
   </main>
+
+
+  <!-- INCOMING CALL -->
+
+  <div
+    id="incomingCall"
+    class="incoming">
+
+    <div class="incoming-box">
+
+      <div class="incoming-icon">
+        📹
+      </div>
+
+      <h2>
+        Incoming Video Call
+      </h2>
+
+      <p>
+        Someone wants to start a random video call with you.
+      </p>
+
+      <div class="incoming-buttons">
+
+        <button
+          id="declineButton"
+          class="decline">
+          Decline
+        </button>
+
+        <button
+          id="acceptButton"
+          class="accept">
+          Accept
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
 
 
   <script type="module">
@@ -190,11 +315,13 @@
     import { initializeApp }
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
+
     import {
       getAuth,
       onAuthStateChanged
     }
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
 
     import {
       getFirestore,
@@ -203,9 +330,11 @@
       where,
       onSnapshot,
       addDoc,
-      serverTimestamp
+      doc,
+      updateDoc
     }
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
 
     import { firebaseConfig }
       from "./firebase-config.js";
@@ -214,8 +343,10 @@
     const app =
       initializeApp(firebaseConfig);
 
+
     const auth =
       getAuth(app);
+
 
     const db =
       getFirestore(app);
@@ -224,16 +355,36 @@
     const usersContainer =
       document.getElementById("users");
 
+
     const randomButton =
       document.getElementById("randomButton");
+
 
     const message =
       document.getElementById("message");
 
 
+    const incomingCall =
+      document.getElementById("incomingCall");
+
+
+    const acceptButton =
+      document.getElementById("acceptButton");
+
+
+    const declineButton =
+      document.getElementById("declineButton");
+
+
     let currentUser = null;
 
     let onlineUsers = [];
+
+    let incomingCallId = null;
+
+    let incomingCallerId = null;
+
+    let callListener = null;
 
 
     onAuthStateChanged(
@@ -249,13 +400,18 @@
 
         }
 
+
         currentUser = user;
 
         loadOnlineUsers();
 
+        listenForIncomingCalls();
+
       }
     );
 
+
+    /* ONLINE USERS */
 
     function loadOnlineUsers() {
 
@@ -283,13 +439,23 @@
                 userDoc.data();
 
 
-              if (userDoc.id === currentUser.uid) {
+              if (
+                userDoc.id ===
+                currentUser.uid
+              ) {
+
                 return;
+
               }
 
 
-              if (!data.age || data.age < 18) {
+              if (
+                !data.age ||
+                data.age < 18
+              ) {
+
                 return;
+
               }
 
 
@@ -298,12 +464,13 @@
                 ...data
               });
 
-
             }
           );
 
 
-          if (onlineUsers.length === 0) {
+          if (
+            onlineUsers.length === 0
+          ) {
 
             usersContainer.innerHTML =
               '<div class="empty">' +
@@ -319,7 +486,9 @@
             function(user) {
 
               const card =
-                document.createElement("div");
+                document.createElement(
+                  "div"
+                );
 
 
               card.className =
@@ -349,7 +518,9 @@
                 '</div>';
 
 
-              usersContainer.appendChild(card);
+              usersContainer.appendChild(
+                card
+              );
 
             }
           );
@@ -374,21 +545,22 @@
     }
 
 
+    /* START RANDOM CALL */
+
     randomButton.addEventListener(
       "click",
       async function() {
 
         if (!currentUser) {
 
-          message.textContent =
-            "Please wait...";
-
           return;
 
         }
 
 
-        if (onlineUsers.length === 0) {
+        if (
+          onlineUsers.length === 0
+        ) {
 
           message.textContent =
             "No other online users are available right now.";
@@ -400,7 +572,8 @@
 
         const randomIndex =
           Math.floor(
-            Math.random() * onlineUsers.length
+            Math.random() *
+            onlineUsers.length
           );
 
 
@@ -408,10 +581,13 @@
           onlineUsers[randomIndex];
 
 
-        randomButton.disabled = true;
+        randomButton.disabled =
+          true;
+
 
         randomButton.textContent =
           "Finding a person...";
+
 
         message.textContent =
           "Creating video call...";
@@ -431,7 +607,7 @@
               "ringing",
 
             createdAt:
-              serverTimestamp()
+              new Date()
 
           };
 
@@ -451,7 +627,9 @@
 
           window.location.href =
             "call.html?callId=" +
-            encodeURIComponent(callRef.id) +
+            encodeURIComponent(
+              callRef.id
+            ) +
             "&role=caller";
 
 
@@ -472,9 +650,170 @@
 
 
           message.textContent =
-            "Could not create video call. Please try again.";
+            "Could not create video call.";
 
         }
+
+      }
+    );
+
+
+    /* INCOMING CALL LISTENER */
+
+    function listenForIncomingCalls() {
+
+      const incomingQuery =
+        query(
+          collection(db, "calls"),
+          where(
+            "receiverId",
+            "==",
+            currentUser.uid
+          ),
+          where(
+            "status",
+            "==",
+            "ringing"
+          )
+        );
+
+
+      callListener =
+        onSnapshot(
+          incomingQuery,
+
+          function(snapshot) {
+
+            snapshot.docChanges()
+              .forEach(
+                function(change) {
+
+                  if (
+                    change.type !==
+                    "added"
+                  ) {
+
+                    return;
+
+                  }
+
+
+                  const data =
+                    change.doc.data();
+
+
+                  incomingCallId =
+                    change.doc.id;
+
+
+                  incomingCallerId =
+                    data.callerId;
+
+
+                  incomingCall.classList.add(
+                    "show"
+                  );
+
+                }
+              );
+
+          },
+
+
+          function(error) {
+
+            console.error(
+              "Incoming Call Error:",
+              error
+            );
+
+          }
+        );
+
+    }
+
+
+    /* ACCEPT */
+
+    acceptButton.addEventListener(
+      "click",
+      async function() {
+
+        if (!incomingCallId) {
+
+          return;
+
+        }
+
+
+        const acceptedCallId =
+          incomingCallId;
+
+
+        incomingCall.classList.remove(
+          "show"
+        );
+
+
+        window.location.href =
+          "call.html?callId=" +
+          encodeURIComponent(
+            acceptedCallId
+          ) +
+          "&role=receiver";
+
+      }
+    );
+
+
+    /* DECLINE */
+
+    declineButton.addEventListener(
+      "click",
+      async function() {
+
+        if (!incomingCallId) {
+
+          incomingCall.classList.remove(
+            "show"
+          );
+
+          return;
+
+        }
+
+
+        try {
+
+          await updateDoc(
+            doc(
+              db,
+              "calls",
+              incomingCallId
+            ),
+            {
+              status: "declined"
+            }
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Decline Error:",
+            error
+          );
+
+        }
+
+
+        incomingCallId = null;
+
+        incomingCallerId = null;
+
+
+        incomingCall.classList.remove(
+          "show"
+        );
 
       }
     );
