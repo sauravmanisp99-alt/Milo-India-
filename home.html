@@ -417,6 +417,8 @@
   </div>
   <script type="module">
 
+<script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
@@ -440,9 +442,9 @@ import {
 import { firebaseConfig } from "./firebase-config.js";
 
 
-/* =========================
+/* =====================================================
    FIREBASE
-========================= */
+===================================================== */
 
 const app = initializeApp(firebaseConfig);
 
@@ -451,32 +453,44 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 
-/* =========================
+/* =====================================================
    ELEMENTS
-========================= */
+===================================================== */
 
-const onlineUsers = document.getElementById("onlineUsers");
+const onlineUsers =
+  document.getElementById("onlineUsers");
 
-const loading = document.getElementById("loading");
+const loading =
+  document.getElementById("loading");
 
-const incomingCallBox = document.getElementById("incomingCallBox");
+const incomingCallBox =
+  document.getElementById("incomingCallBox");
 
-const acceptCall = document.getElementById("acceptCall");
+const acceptCall =
+  document.getElementById("acceptCall");
 
-const declineCall = document.getElementById("declineCall");
+const declineCall =
+  document.getElementById("declineCall");
 
-const reportModal = document.getElementById("reportModal");
+const reportModal =
+  document.getElementById("reportModal");
 
-const reportReason = document.getElementById("reportReason");
+const reportReason =
+  document.getElementById("reportReason");
 
-const submitReport = document.getElementById("submitReport");
+const submitReport =
+  document.getElementById("submitReport");
 
-const cancelReport = document.getElementById("cancelReport");
+const cancelReport =
+  document.getElementById("cancelReport");
+
+const startRandomCallButton =
+  document.getElementById("startRandomCall");
 
 
-/* =========================
+/* =====================================================
    VARIABLES
-========================= */
+===================================================== */
 
 let currentUser = null;
 
@@ -491,9 +505,9 @@ let incomingCallerId = null;
 let callListener = null;
 
 
-/* =========================
+/* =====================================================
    AUTH
-========================= */
+===================================================== */
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -507,7 +521,11 @@ onAuthStateChanged(auth, async (user) => {
 
   currentUser = user;
 
-  console.log("Logged in:", currentUser.uid);
+  console.log(
+    "Milo user logged in:",
+    currentUser.uid
+  );
+
 
   await loadBlockedUsers();
 
@@ -518,214 +536,377 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 
-/* =========================
+/* =====================================================
+   RANDOM VIDEO CALL BUTTON
+===================================================== */
+
+if (startRandomCallButton) {
+
+  startRandomCallButton.addEventListener(
+    "click",
+    async () => {
+
+      await startRandomCall();
+
+    }
+  );
+
+} else {
+
+  console.warn(
+    "Start Random Video Call button not found. " +
+    "Make sure button id='startRandomCall' exists."
+  );
+
+}
+
+
+/* =====================================================
    LOAD BLOCKED USERS
-========================= */
+===================================================== */
 
 async function loadBlockedUsers() {
+
+  if (!currentUser) {
+
+    return;
+
+  }
 
   try {
 
     const q = query(
       collection(db, "blocks"),
-      where("blockerId", "==", currentUser.uid)
+      where(
+        "blockerId",
+        "==",
+        currentUser.uid
+      )
     );
+
 
     const snapshot = await getDocs(q);
 
+
     blockedUserIds = [];
+
 
     snapshot.forEach((item) => {
 
       const data = item.data();
 
+
       if (data.blockedUserId) {
 
-        blockedUserIds.push(data.blockedUserId);
+        blockedUserIds.push(
+          data.blockedUserId
+        );
 
       }
 
     });
 
-    console.log("Blocked users:", blockedUserIds);
+
+    console.log(
+      "Blocked users:",
+      blockedUserIds
+    );
+
 
   } catch (error) {
 
-    console.error("Block loading error:", error);
+    console.error(
+      "Block loading error:",
+      error
+    );
 
   }
 
 }
 
 
-/* =========================
+/* =====================================================
    LOAD ONLINE USERS
-========================= */
+===================================================== */
 
 function loadOnlineUsers() {
+
+  if (!currentUser) {
+
+    return;
+
+  }
+
 
   const q = query(
     collection(db, "users"),
     where("online", "==", true)
   );
 
-  onSnapshot(q, (snapshot) => {
 
-    onlineUsers.innerHTML = "";
+  onSnapshot(
+    q,
+    (snapshot) => {
 
-    loading.style.display = "none";
+      if (onlineUsers) {
 
-    let foundUsers = false;
-
-    snapshot.forEach((item) => {
-
-      const user = item.data();
-
-      user.id = item.id;
-
-
-      /* Don't show yourself */
-
-      if (user.id === currentUser.uid) {
-
-        return;
+        onlineUsers.innerHTML = "";
 
       }
 
 
-      /* Don't show blocked users */
+      if (loading) {
 
-      if (blockedUserIds.includes(user.id)) {
-
-        return;
+        loading.style.display = "none";
 
       }
 
 
-      /* Only 18+ */
+      let foundUsers = false;
 
-      if (Number(user.age) < 18) {
 
-        return;
+      snapshot.forEach((item) => {
+
+        const user = item.data();
+
+        user.id = item.id;
+
+
+        /* =========================
+           DON'T SHOW YOURSELF
+        ========================= */
+
+        if (
+          user.id === currentUser.uid
+        ) {
+
+          return;
+
+        }
+
+
+        /* =========================
+           DON'T SHOW BLOCKED USERS
+        ========================= */
+
+        if (
+          blockedUserIds.includes(user.id)
+        ) {
+
+          return;
+
+        }
+
+
+        /* =========================
+           ONLY 18+
+        ========================= */
+
+        if (
+          Number(user.age) < 18
+        ) {
+
+          return;
+
+        }
+
+
+        foundUsers = true;
+
+
+        const card =
+          createUserCard(user);
+
+
+        if (onlineUsers) {
+
+          onlineUsers.appendChild(card);
+
+        }
+
+      });
+
+
+      if (
+        !foundUsers &&
+        onlineUsers
+      ) {
+
+        onlineUsers.innerHTML = `
+          <div class="empty">
+            No online people right now.
+          </div>
+        `;
 
       }
 
+    },
 
-      foundUsers = true;
+    (error) => {
 
-      const card = createUserCard(user);
+      console.error(
+        "Online users error:",
+        error
+      );
 
-      onlineUsers.appendChild(card);
 
-    });
+      if (loading) {
 
+        loading.innerText =
+          "Unable to load online users.";
 
-    if (!foundUsers) {
-
-      onlineUsers.innerHTML = `
-        <div class="empty">
-          No online people right now.
-        </div>
-      `;
+      }
 
     }
 
-  }, (error) => {
-
-    console.error("Online users error:", error);
-
-    loading.innerText =
-      "Unable to load online users.";
-
-  });
+  );
 
 }
 
 
-/* =========================
+/* =====================================================
    CREATE USER CARD
-========================= */
+===================================================== */
 
 function createUserCard(user) {
 
-  const card = document.createElement("div");
+  const card =
+    document.createElement("div");
 
-  card.className = "user-card";
-
-
-  const name = document.createElement("h3");
-
-  name.textContent = user.name || "Milo User";
+  card.className =
+    "user-card";
 
 
-  const info = document.createElement("p");
+  const name =
+    document.createElement("h3");
+
+  name.textContent =
+    user.name || "Milo User";
+
+
+  const info =
+    document.createElement("p");
 
   info.textContent =
-    `${user.age || "18+"} • ${user.gender || "Unknown"} • ${user.country || "Unknown"}`;
+    `${user.age || "18+"} • ${
+      user.gender || "Unknown"
+    } • ${
+      user.country || "Unknown"
+    }`;
 
 
-  const status = document.createElement("p");
+  const status =
+    document.createElement("p");
 
-  status.className = "online";
+  status.className =
+    "online";
 
-  status.textContent = "● Online";
-
-
-  const actions = document.createElement("div");
-
-  actions.className = "user-actions";
+  status.textContent =
+    "● Online";
 
 
-  /* CALL BUTTON */
+  const actions =
+    document.createElement("div");
 
-  const callButton = document.createElement("button");
-
-  callButton.className = "call-btn";
-
-  callButton.textContent = "📹 Call";
-
-  callButton.addEventListener("click", () => {
-
-    startCall(user);
-
-  });
+  actions.className =
+    "user-actions";
 
 
-  /* BLOCK BUTTON */
+  /* =====================================================
+     CALL BUTTON
+  ===================================================== */
 
-  const blockButton = document.createElement("button");
+  const callButton =
+    document.createElement("button");
 
-  blockButton.className = "small-btn block-btn";
+  callButton.className =
+    "call-btn";
 
-  blockButton.textContent = "🚫 Block";
-
-  blockButton.addEventListener("click", () => {
-
-    blockUser(user.id);
-
-  });
-
-
-  /* REPORT BUTTON */
-
-  const reportButton = document.createElement("button");
-
-  reportButton.className = "small-btn report-btn";
-
-  reportButton.textContent = "⚠️ Report";
-
-  reportButton.addEventListener("click", () => {
-
-    openReportModal(user.id);
-
-  });
+  callButton.textContent =
+    "📹 Call";
 
 
-  actions.appendChild(callButton);
+  callButton.addEventListener(
+    "click",
+    async () => {
 
-  actions.appendChild(blockButton);
+      callButton.disabled = true;
 
-  actions.appendChild(reportButton);
+      callButton.textContent =
+        "Calling...";
+
+
+      await startCall(user);
+
+
+      callButton.disabled = false;
+
+      callButton.textContent =
+        "📹 Call";
+
+    }
+  );
+
+
+  /* =====================================================
+     BLOCK BUTTON
+  ===================================================== */
+
+  const blockButton =
+    document.createElement("button");
+
+  blockButton.className =
+    "small-btn block-btn";
+
+  blockButton.textContent =
+    "🚫 Block";
+
+
+  blockButton.addEventListener(
+    "click",
+    async () => {
+
+      await blockUser(user.id);
+
+    }
+  );
+
+
+  /* =====================================================
+     REPORT BUTTON
+  ===================================================== */
+
+  const reportButton =
+    document.createElement("button");
+
+  reportButton.className =
+    "small-btn report-btn";
+
+  reportButton.textContent =
+    "⚠️ Report";
+
+
+  reportButton.addEventListener(
+    "click",
+    () => {
+
+      openReportModal(user.id);
+
+    }
+  );
+
+
+  actions.appendChild(
+    callButton
+  );
+
+  actions.appendChild(
+    blockButton
+  );
+
+  actions.appendChild(
+    reportButton
+  );
 
 
   card.appendChild(name);
@@ -742,13 +923,17 @@ function createUserCard(user) {
 }
 
 
-/* =========================
+/* =====================================================
    START RANDOM VIDEO CALL
-========================= */
+===================================================== */
 
-async function startCall(selectedUser) {
+async function startRandomCall() {
 
   if (!currentUser) {
+
+    alert(
+      "Please wait. Your account is loading..."
+    );
 
     return;
 
@@ -757,37 +942,139 @@ async function startCall(selectedUser) {
 
   try {
 
-    const callData = {
-
-      callerId: currentUser.uid,
-
-      receiverId: selectedUser.id,
-
-      status: "ringing",
-
-      createdAt: serverTimestamp()
-
-    };
-
-
-    const callRef = await addDoc(
-      collection(db, "calls"),
-      callData
+    console.log(
+      "Searching for online users..."
     );
 
 
-    window.location.href =
-      "call.html?callId=" +
-      encodeURIComponent(callRef.id) +
-      "&role=caller";
+    /* =========================
+       GET ONLINE USERS
+    ========================= */
 
+    const q = query(
+      collection(db, "users"),
+      where("online", "==", true)
+    );
+
+
+    const snapshot =
+      await getDocs(q);
+
+
+    let availableUsers = [];
+
+
+    /* =========================
+       FILTER USERS
+    ========================= */
+
+    snapshot.forEach((item) => {
+
+      const user = item.data();
+
+      user.id = item.id;
+
+
+      /* Don't select yourself */
+
+      if (
+        user.id === currentUser.uid
+      ) {
+
+        return;
+
+      }
+
+
+      /* Don't select blocked users */
+
+      if (
+        blockedUserIds.includes(
+          user.id
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      /* Only 18+ */
+
+      if (
+        Number(user.age) < 18
+      ) {
+
+        return;
+
+      }
+
+
+      availableUsers.push(user);
+
+    });
+
+
+    console.log(
+      "Available random users:",
+      availableUsers.length
+    );
+
+
+    /* =========================
+       NO USER FOUND
+    ========================= */
+
+    if (
+      availableUsers.length === 0
+    ) {
+
+      alert(
+        "No online people available right now.\n\nPlease try again in a moment."
+      );
+
+      return;
+
+    }
+
+
+    /* =========================
+       SELECT RANDOM USER
+    ========================= */
+
+    const randomIndex =
+      Math.floor(
+        Math.random() *
+        availableUsers.length
+      );
+
+
+    const randomUser =
+      availableUsers[randomIndex];
+
+
+    console.log(
+      "Random user selected:",
+      randomUser
+    );
+
+
+    /* =========================
+       START CALL
+    ========================= */
+
+    await startCall(randomUser);
 
   } catch (error) {
 
-    console.error("Call error:", error);
+    console.error(
+      "Random call error:",
+      error
+    );
+
 
     alert(
-      "Unable to start call.\n\n" +
+      "Unable to start random video call.\n\n" +
       error.message
     );
 
@@ -796,11 +1083,113 @@ async function startCall(selectedUser) {
 }
 
 
-/* =========================
-   BLOCK USER
-========================= */
+/* =====================================================
+   START VIDEO CALL
+===================================================== */
 
-async function blockUser(blockedUserId) {
+async function startCall(selectedUser) {
+
+  if (!currentUser) {
+
+    alert(
+      "Please login first."
+    );
+
+    return;
+
+  }
+
+
+  if (!selectedUser) {
+
+    alert(
+      "No user selected."
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    console.log(
+      "Starting call with:",
+      selectedUser.id
+    );
+
+
+    /* =========================
+       CREATE CALL
+    ========================= */
+
+    const callData = {
+
+      callerId:
+        currentUser.uid,
+
+      receiverId:
+        selectedUser.id,
+
+      status:
+        "ringing",
+
+      createdAt:
+        serverTimestamp()
+
+    };
+
+
+    const callRef =
+      await addDoc(
+        collection(db, "calls"),
+        callData
+      );
+
+
+    console.log(
+      "Call created:",
+      callRef.id
+    );
+
+
+    /* =========================
+       OPEN VIDEO CALL PAGE
+    ========================= */
+
+    window.location.href =
+      "video-call.html?callId=" +
+      encodeURIComponent(
+        callRef.id
+      ) +
+      "&role=caller";
+
+
+  } catch (error) {
+
+    console.error(
+      "Call error:",
+      error
+    );
+
+
+    alert(
+      "Unable to start video call.\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   BLOCK USER
+===================================================== */
+
+async function blockUser(
+  blockedUserId
+) {
 
   if (!currentUser) {
 
@@ -809,9 +1198,10 @@ async function blockUser(blockedUserId) {
   }
 
 
-  const confirmBlock = confirm(
-    "Are you sure you want to block this user?"
-  );
+  const confirmBlock =
+    confirm(
+      "Are you sure you want to block this user?"
+    );
 
 
   if (!confirmBlock) {
@@ -827,35 +1217,49 @@ async function blockUser(blockedUserId) {
       collection(db, "blocks"),
       {
 
-        blockerId: currentUser.uid,
+        blockerId:
+          currentUser.uid,
 
-        blockedUserId: blockedUserId,
+        blockedUserId:
+          blockedUserId,
 
-        createdAt: serverTimestamp()
+        createdAt:
+          serverTimestamp()
 
       }
     );
 
 
-    /* Immediately add to local list */
+    /* Immediately update local list */
 
-    if (!blockedUserIds.includes(blockedUserId)) {
+    if (
+      !blockedUserIds.includes(
+        blockedUserId
+      )
+    ) {
 
-      blockedUserIds.push(blockedUserId);
+      blockedUserIds.push(
+        blockedUserId
+      );
 
     }
 
 
-    /* Reload list */
-
     loadOnlineUsers();
 
 
-    alert("User blocked successfully.");
+    alert(
+      "User blocked successfully."
+    );
+
 
   } catch (error) {
 
-    console.error("Block error:", error);
+    console.error(
+      "Block error:",
+      error
+    );
+
 
     alert(
       "Unable to block user.\n\n" +
@@ -867,132 +1271,226 @@ async function blockUser(blockedUserId) {
 }
 
 
-/* =========================
+/* =====================================================
    REPORT MODAL
-========================= */
+===================================================== */
 
-function openReportModal(userId) {
+function openReportModal(
+  userId
+) {
 
-  reportUserId = userId;
+  reportUserId =
+    userId;
 
-  reportReason.value = "";
 
-  reportModal.style.display = "flex";
+  if (reportReason) {
+
+    reportReason.value = "";
+
+  }
+
+
+  if (reportModal) {
+
+    reportModal.style.display =
+      "flex";
+
+  }
 
 }
 
 
-cancelReport.addEventListener("click", () => {
+/* =====================================================
+   CANCEL REPORT
+===================================================== */
 
-  reportModal.style.display = "none";
+if (cancelReport) {
 
-  reportUserId = null;
+  cancelReport.addEventListener(
+    "click",
+    () => {
 
-});
+      if (reportModal) {
 
-
-/* Close when clicking outside */
-
-reportModal.addEventListener("click", (event) => {
-
-  if (event.target === reportModal) {
-
-    reportModal.style.display = "none";
-
-    reportUserId = null;
-
-  }
-
-});
-
-
-/* =========================
-   SUBMIT REPORT
-========================= */
-
-submitReport.addEventListener("click", async () => {
-
-  if (!currentUser || !reportUserId) {
-
-    return;
-
-  }
-
-
-  const reason = reportReason.value;
-
-
-  if (!reason) {
-
-    alert("Please select a reason.");
-
-    return;
-
-  }
-
-
-  try {
-
-    submitReport.disabled = true;
-
-    submitReport.textContent = "Sending...";
-
-
-    await addDoc(
-      collection(db, "reports"),
-      {
-
-        reporterId: currentUser.uid,
-
-        reportedUserId: reportUserId,
-
-        reason: reason,
-
-        status: "pending",
-
-        createdAt: serverTimestamp()
+        reportModal.style.display =
+          "none";
 
       }
-    );
 
 
-    reportModal.style.display = "none";
+      reportUserId =
+        null;
 
-    reportUserId = null;
+    }
+  );
 
-    reportReason.value = "";
-
-
-    alert("Report submitted successfully.");
-
-
-  } catch (error) {
-
-    console.error("Report error:", error);
-
-    alert(
-      "Unable to submit report.\n\n" +
-      error.message
-    );
-
-  } finally {
-
-    submitReport.disabled = false;
-
-    submitReport.textContent = "Submit Report";
-
-  }
-
-});
+}
 
 
-/* =========================
+/* =====================================================
+   CLOSE REPORT MODAL
+===================================================== */
+
+if (reportModal) {
+
+  reportModal.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        reportModal
+      ) {
+
+        reportModal.style.display =
+          "none";
+
+
+        reportUserId =
+          null;
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   SUBMIT REPORT
+===================================================== */
+
+if (submitReport) {
+
+  submitReport.addEventListener(
+    "click",
+    async () => {
+
+      if (
+        !currentUser ||
+        !reportUserId
+      ) {
+
+        return;
+
+      }
+
+
+      const reason =
+        reportReason
+          ? reportReason.value
+          : "";
+
+
+      if (!reason) {
+
+        alert(
+          "Please select a reason."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        submitReport.disabled =
+          true;
+
+        submitReport.textContent =
+          "Sending...";
+
+
+        await addDoc(
+          collection(db, "reports"),
+          {
+
+            reporterId:
+              currentUser.uid,
+
+            reportedUserId:
+              reportUserId,
+
+            reason:
+              reason,
+
+            status:
+              "pending",
+
+            createdAt:
+              serverTimestamp()
+
+          }
+        );
+
+
+        if (reportModal) {
+
+          reportModal.style.display =
+            "none";
+
+        }
+
+
+        reportUserId =
+          null;
+
+
+        if (reportReason) {
+
+          reportReason.value =
+            "";
+
+        }
+
+
+        alert(
+          "Report submitted successfully."
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Report error:",
+          error
+        );
+
+
+        alert(
+          "Unable to submit report.\n\n" +
+          error.message
+        );
+
+
+      } finally {
+
+        submitReport.disabled =
+          false;
+
+        submitReport.textContent =
+          "Submit Report";
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
    INCOMING CALLS
-========================= */
+===================================================== */
 
 function listenForIncomingCalls() {
 
-  if (callListener) {
+  if (
+    callListener ||
+    !currentUser
+  ) {
 
     return;
 
@@ -1001,160 +1499,253 @@ function listenForIncomingCalls() {
 
   const q = query(
     collection(db, "calls"),
-    where("receiverId", "==", currentUser.uid),
-    where("status", "==", "ringing")
+
+    where(
+      "receiverId",
+      "==",
+      currentUser.uid
+    ),
+
+    where(
+      "status",
+      "==",
+      "ringing"
+    )
   );
 
 
-  callListener = onSnapshot(q, async (snapshot) => {
+  callListener =
+    onSnapshot(
+      q,
 
-    for (const item of snapshot.docChanges()) {
+      async (snapshot) => {
 
-      if (item.type !== "added") {
+        for (
+          const item of
+          snapshot.docChanges()
+        ) {
 
-        continue;
+          if (
+            item.type !==
+            "added"
+          ) {
 
-      }
+            continue;
+
+          }
 
 
-      const data = item.doc.data();
+          const data =
+            item.doc.data();
 
 
-      /* =========================
-         BLOCKED CALLER CHECK
-      ========================= */
+          /* =========================
+             BLOCKED CALLER CHECK
+          ========================= */
 
-      if (
-        data.callerId &&
-        blockedUserIds.includes(data.callerId)
-      ) {
+          if (
+            data.callerId &&
+            blockedUserIds.includes(
+              data.callerId
+            )
+          ) {
 
-        try {
+            try {
 
-          await updateDoc(
-            doc(db, "calls", item.doc.id),
-            {
-              status: "blocked"
+              await updateDoc(
+                doc(
+                  db,
+                  "calls",
+                  item.doc.id
+                ),
+
+                {
+                  status:
+                    "blocked"
+                }
+              );
+
+            } catch (error) {
+
+              console.error(
+                "Blocked call update error:",
+                error
+              );
+
             }
-          );
 
-        } catch (error) {
 
-          console.error(
-            "Blocked call update error:",
-            error
-          );
+            continue;
+
+          }
+
+
+          incomingCallId =
+            item.doc.id;
+
+          incomingCallerId =
+            data.callerId;
+
+
+          if (incomingCallBox) {
+
+            incomingCallBox.style.display =
+              "block";
+
+          }
 
         }
 
-        continue;
+      },
+
+      (error) => {
+
+        console.error(
+          "Incoming call listener error:",
+          error
+        );
 
       }
-
-
-      incomingCallId = item.doc.id;
-
-      incomingCallerId = data.callerId;
-
-
-      incomingCallBox.style.display = "block";
-
-    }
-
-  }, (error) => {
-
-    console.error(
-      "Incoming call listener error:",
-      error
     );
-
-  });
 
 }
 
 
-/* =========================
-   ACCEPT CALL
-========================= */
+/* =====================================================
+   ACCEPT INCOMING CALL
+===================================================== */
 
-acceptCall.addEventListener("click", async () => {
+if (acceptCall) {
 
-  if (!incomingCallId) {
+  acceptCall.addEventListener(
+    "click",
+    async () => {
 
-    return;
+      if (
+        !incomingCallId
+      ) {
 
-  }
+        return;
 
-
-  try {
-
-    await updateDoc(
-      doc(db, "calls", incomingCallId),
-      {
-        status: "accepted"
       }
-    );
 
 
-    window.location.href =
-      "call.html?callId=" +
-      encodeURIComponent(incomingCallId) +
-      "&role=receiver";
+      try {
+
+        await updateDoc(
+          doc(
+            db,
+            "calls",
+            incomingCallId
+          ),
+
+          {
+            status:
+              "accepted"
+          }
+        );
 
 
-  } catch (error) {
+        /* =========================
+           OPEN VIDEO CALL
+        ========================= */
 
-    console.error("Accept call error:", error);
-
-    alert(
-      "Unable to accept call.\n\n" +
-      error.message
-    );
-
-  }
-
-});
+        window.location.href =
+          "video-call.html?callId=" +
+          encodeURIComponent(
+            incomingCallId
+          ) +
+          "&role=receiver";
 
 
-/* =========================
-   DECLINE CALL
-========================= */
+      } catch (error) {
 
-declineCall.addEventListener("click", async () => {
-
-  if (!incomingCallId) {
-
-    return;
-
-  }
+        console.error(
+          "Accept call error:",
+          error
+        );
 
 
-  try {
+        alert(
+          "Unable to accept call.\n\n" +
+          error.message
+        );
 
-    await updateDoc(
-      doc(db, "calls", incomingCallId),
-      {
-        status: "declined"
       }
-    );
+
+    }
+  );
+
+}
 
 
-    incomingCallBox.style.display = "none";
+/* =====================================================
+   DECLINE INCOMING CALL
+===================================================== */
 
-    incomingCallId = null;
+if (declineCall) {
 
-    incomingCallerId = null;
+  declineCall.addEventListener(
+    "click",
+    async () => {
+
+      if (
+        !incomingCallId
+      ) {
+
+        return;
+
+      }
 
 
-  } catch (error) {
+      try {
 
-    console.error("Decline call error:", error);
+        await updateDoc(
+          doc(
+            db,
+            "calls",
+            incomingCallId
+          ),
 
-  }
+          {
+            status:
+              "declined"
+          }
+        );
 
-});
+
+        if (incomingCallBox) {
+
+          incomingCallBox.style.display =
+            "none";
+
+        }
+
+
+        incomingCallId =
+          null;
+
+        incomingCallerId =
+          null;
+
+
+      } catch (error) {
+
+        console.error(
+          "Decline call error:",
+          error
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+console.log(
+  "Milo India home script loaded successfully."
+);
 
 </script>
-
-</body>
-</html>
