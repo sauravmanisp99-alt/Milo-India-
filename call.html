@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html><html lang="en"><head>  <meta charset="UTF-8"><meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
 
-  <title>Milo India - Video Call</title>
+«»
 
-  <style>
+  <title>Milo India - Video Call</title>  <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -151,95 +150,100 @@
       font-size: 20px;
       cursor: pointer;
     }
-  </style>
-</head>
 
-<body>
+  </style></head><body>  <main class="call"><video
+  id="remoteVideo"
+  class="remote-video"
+  autoplay
+  playsinline
+></video>
 
-  <main class="call">
+<video
+  id="localVideo"
+  class="local-video"
+  autoplay
+  muted
+  playsinline
+></video>
 
-    <video
-      id="remoteVideo"
-      class="remote-video"
-      autoplay
-      playsinline>
-    </video>
+<button
+  id="backButton"
+  class="back"
+  type="button"
+>
+  ←
+</button>
 
-    <video
-      id="localVideo"
-      class="local-video"
-      autoplay
-      muted
-      playsinline>
-    </video>
+<div class="top">
 
+  <div class="title">
+    Milo India
+  </div>
 
-    <button id="backButton" class="back">
-      ←
-    </button>
+  <div
+    id="timer"
+    class="timer"
+  >
+    00:00
+  </div>
 
+</div>
 
-    <div class="top">
+<div
+  id="status"
+  class="status"
+>
+  Connecting...
+</div>
 
-      <div class="title">
-        Milo India
-      </div>
+<div class="controls">
 
-      <div id="timer" class="timer">
-        00:00
-      </div>
+  <button
+    id="micButton"
+    class="control"
+    type="button"
+  >
+    🎤
+  </button>
 
-    </div>
+  <button
+    id="cameraButton"
+    class="control"
+    type="button"
+  >
+    📷
+  </button>
 
+  <button
+    id="nextButton"
+    class="next"
+    type="button"
+  >
+    Next →
+  </button>
 
-    <div id="status" class="status">
-      Connecting...
-    </div>
+  <button
+    id="endButton"
+    class="end"
+    type="button"
+  >
+    ☎
+  </button>
 
+</div>
 
-    <div class="controls">
+  </main>  <script type="module">
 
-      <button
-        id="micButton"
-        class="control">
-        🎤
-      </button>
-
-      <button
-        id="cameraButton"
-        class="control">
-        📷
-      </button>
-
-      <button
-        id="nextButton"
-        class="next">
-        Next →
-      </button>
-
-      <button
-        id="endButton"
-        class="end">
-        ☎
-      </button>
-
-    </div>
-
-  </main>
-
-
-  <script type="module">
-
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
+    import {
+      initializeApp
+    } from
+      "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
     import {
       getAuth,
       onAuthStateChanged
-    }
-      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
+    } from
+      "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
     import {
       getFirestore,
@@ -250,25 +254,21 @@
       addDoc,
       onSnapshot,
       serverTimestamp
-    }
-      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    } from
+      "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-
-    import { firebaseConfig }
-      from "./firebase-config.js";
-
+    import {
+      firebaseConfig
+    } from "./firebase-config.js";
 
     const app =
       initializeApp(firebaseConfig);
 
-
     const auth =
       getAuth(app);
 
-
     const db =
       getFirestore(app);
-
 
     const localVideo =
       document.getElementById("localVideo");
@@ -297,20 +297,16 @@
     const backButton =
       document.getElementById("backButton");
 
-
     const params =
       new URLSearchParams(
         window.location.search
       );
 
-
     const callId =
       params.get("callId");
 
-
     const role =
       params.get("role");
-
 
     let currentUser = null;
 
@@ -328,7 +324,6 @@
 
     let leavingCall = false;
 
-
     const rtcConfig = {
 
       iceServers: [
@@ -342,25 +337,26 @@
 
     };
 
-
     onAuthStateChanged(
       auth,
-      async function(user) {
+      async (user) => {
 
         if (!user) {
 
           window.location.href =
-            "login.html";
+            "index.html";
 
           return;
 
         }
 
+        currentUser =
+          user;
 
-        currentUser = user;
-
-
-        if (!callId || !role) {
+        if (
+          !callId ||
+          !role
+        ) {
 
           status.textContent =
             "Invalid call.";
@@ -369,31 +365,31 @@
 
         }
 
-
         await startCall();
 
       }
     );
-
 
     async function startCall() {
 
       status.textContent =
         "Starting camera...";
 
-
       try {
 
         localStream =
-          await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-          });
+          await navigator
+            .mediaDevices
+            .getUserMedia({
 
+              video: true,
+
+              audio: true
+
+            });
 
         localVideo.srcObject =
           localStream;
-
 
       } catch (error) {
 
@@ -402,7 +398,6 @@
           error
         );
 
-
         status.textContent =
           "Camera and microphone permission is required.";
 
@@ -410,23 +405,21 @@
 
       }
 
-
       createPeerConnection();
 
-
-      if (role === "caller") {
+      if (
+        role === "caller"
+      ) {
 
         await startAsCaller();
 
-      }
-
-      else if (role === "receiver") {
+      } else if (
+        role === "receiver"
+      ) {
 
         await startAsReceiver();
 
-      }
-
-      else {
+      } else {
 
         status.textContent =
           "Invalid call role.";
@@ -435,7 +428,6 @@
 
     }
 
-
     function createPeerConnection() {
 
       peerConnection =
@@ -443,23 +435,26 @@
           rtcConfig
         );
 
-
       localStream
         .getTracks()
-        .forEach(function(track) {
+        .forEach(
+          (track) => {
 
-          peerConnection.addTrack(
-            track,
-            localStream
-          );
+            peerConnection.addTrack(
+              track,
+              localStream
+            );
 
-        });
-
+          }
+        );
 
       peerConnection.ontrack =
-        function(event) {
+        (event) => {
 
-          if (event.streams[0]) {
+          if (
+            event.streams &&
+            event.streams[0]
+          ) {
 
             remoteVideo.srcObject =
               event.streams[0];
@@ -473,14 +468,16 @@
 
         };
 
-
       peerConnection.onicecandidate =
-        async function(event) {
+        async (event) => {
 
-          if (!event.candidate) {
+          if (
+            !event.candidate
+          ) {
+
             return;
-          }
 
+          }
 
           try {
 
@@ -489,17 +486,18 @@
                 ? "callerCandidates"
                 : "receiverCandidates";
 
-
             await addDoc(
+
               collection(
                 db,
                 "calls",
                 callId,
                 collectionName
               ),
-              event.candidate.toJSON()
-            );
 
+              event.candidate.toJSON()
+
+            );
 
           } catch (error) {
 
@@ -512,20 +510,24 @@
 
         };
 
-
       peerConnection.onconnectionstatechange =
-        function() {
+        () => {
 
-          if (!peerConnection) {
+          if (
+            !peerConnection
+          ) {
+
             return;
+
           }
 
-
           const state =
-            peerConnection.connectionState;
+            peerConnection
+              .connectionState;
 
-
-          if (state === "connected") {
+          if (
+            state === "connected"
+          ) {
 
             status.textContent =
               "Connected";
@@ -534,14 +536,14 @@
 
           }
 
-
-          if (state === "connecting") {
+          if (
+            state === "connecting"
+          ) {
 
             status.textContent =
               "Connecting...";
 
           }
-
 
           if (
             state === "disconnected" ||
@@ -549,7 +551,9 @@
             state === "closed"
           ) {
 
-            if (!leavingCall) {
+            if (
+              !leavingCall
+            ) {
 
               status.textContent =
                 "Call ended";
@@ -562,33 +566,46 @@
 
     }
 
-
     async function startAsCaller() {
 
       status.textContent =
         "Calling...";
 
-
       const offer =
-        await peerConnection.createOffer();
+        await peerConnection
+          .createOffer();
 
-
-      await peerConnection.setLocalDescription(
-        offer
-      );
-
+      await peerConnection
+        .setLocalDescription(
+          offer
+        );
 
       await updateDoc(
-        doc(db, "calls", callId),
-        {
-          offer: {
-            type: offer.type,
-            sdp: offer.sdp
-          },
-          status: "calling"
-        }
-      );
 
+        doc(
+          db,
+          "calls",
+          callId
+        ),
+
+        {
+
+          offer: {
+
+            type:
+              offer.type,
+
+            sdp:
+              offer.sdp
+
+          },
+
+          status:
+            "calling"
+
+        }
+
+      );
 
       listenForAnswer();
 
@@ -596,12 +613,10 @@
 
     }
 
-
     async function startAsReceiver() {
 
       status.textContent =
         "Joining call...";
-
 
       const callRef =
         doc(
@@ -610,12 +625,14 @@
           callId
         );
 
+      const snapshot =
+        await getDoc(
+          callRef
+        );
 
-      const callSnapshot =
-        await getDoc(callRef);
-
-
-      if (!callSnapshot.exists()) {
+      if (
+        !snapshot.exists()
+      ) {
 
         status.textContent =
           "Call not found.";
@@ -624,89 +641,103 @@
 
       }
 
+      const data =
+        snapshot.data();
 
-      const callData =
-        callSnapshot.data();
-
-
-      if (!callData.offer) {
+      if (
+        !data.offer
+      ) {
 
         status.textContent =
           "Waiting for caller...";
 
-
         const stop =
           onSnapshot(
+
             callRef,
-            async function(snapshot) {
 
-              const data =
-                snapshot.data();
+            async (liveSnapshot) => {
 
+              const liveData =
+                liveSnapshot.data();
 
               if (
-                data &&
-                data.offer
+                liveData &&
+                liveData.offer
               ) {
 
                 stop();
 
                 await createAnswer(
-                  data.offer
+                  liveData.offer
                 );
 
               }
 
             }
-          );
 
+          );
 
         return;
 
       }
 
-
       await createAnswer(
-        callData.offer
+        data.offer
       );
 
     }
-
 
     async function createAnswer(
       offer
     ) {
 
-      await peerConnection.setRemoteDescription(
-        new RTCSessionDescription(offer)
-      );
-
+      await peerConnection
+        .setRemoteDescription(
+          new RTCSessionDescription(
+            offer
+          )
+        );
 
       const answer =
-        await peerConnection.createAnswer();
+        await peerConnection
+          .createAnswer();
 
-
-      await peerConnection.setLocalDescription(
-        answer
-      );
-
+      await peerConnection
+        .setLocalDescription(
+          answer
+        );
 
       await updateDoc(
-        doc(db, "calls", callId),
-        {
-          answer: {
-            type: answer.type,
-            sdp: answer.sdp
-          },
-          status: "connected"
-        }
-      );
 
+        doc(
+          db,
+          "calls",
+          callId
+        ),
+
+        {
+
+          answer: {
+
+            type:
+              answer.type,
+
+            sdp:
+              answer.sdp
+
+          },
+
+          status:
+            "connected"
+
+        }
+
+      );
 
       listenForCallerCandidates();
 
     }
-
 
     function listenForAnswer() {
 
@@ -717,15 +748,15 @@
           callId
         );
 
-
       callUnsubscribe =
         onSnapshot(
+
           callRef,
-          async function(snapshot) {
+
+          async (snapshot) => {
 
             const data =
               snapshot.data();
-
 
             if (
               !data ||
@@ -736,7 +767,6 @@
 
             }
 
-
             if (
               peerConnection
                 .currentRemoteDescription
@@ -746,15 +776,16 @@
 
             }
 
-
             try {
 
-              await peerConnection.setRemoteDescription(
-                new RTCSessionDescription(
-                  data.answer
-                )
-              );
+              await peerConnection
+                .setRemoteDescription(
 
+                  new RTCSessionDescription(
+                    data.answer
+                  )
+
+                );
 
               status.textContent =
                 "Connecting...";
@@ -769,47 +800,58 @@
             }
 
           }
+
         );
 
     }
-
 
     function listenForReceiverCandidates() {
 
       const candidatesRef =
         collection(
-          db,
-          "calls",
-          callId,
-          "receiverCandidates"
-        );
 
+          db,
+
+          "calls",
+
+          callId,
+
+          "receiverCandidates"
+
+        );
 
       candidateUnsubscribe =
         onSnapshot(
-          candidatesRef,
-          function(snapshot) {
 
-            snapshot.docChanges()
+          candidatesRef,
+
+          (snapshot) => {
+
+            snapshot
+              .docChanges()
               .forEach(
-                async function(change) {
+
+                async (change) => {
 
                   if (
-                    change.type !== "added"
+                    change.type !==
+                    "added"
                   ) {
 
                     return;
 
                   }
 
-
                   try {
 
-                    await peerConnection.addIceCandidate(
-                      new RTCIceCandidate(
-                        change.doc.data()
-                      )
-                    );
+                    await peerConnection
+                      .addIceCandidate(
+
+                        new RTCIceCandidate(
+                          change.doc.data()
+                        )
+
+                      );
 
                   } catch (error) {
 
@@ -821,324 +863,408 @@
                   }
 
                 }
+
               );
 
           }
+
         );
+      function listenForCallerCandidates() {
+
+  const candidatesRef =
+    collection(
+
+      db,
+
+      "calls",
+
+      callId,
+
+      "callerCandidates"
+
+    );
+
+  candidateUnsubscribe =
+    onSnapshot(
+
+      candidatesRef,
+
+      (snapshot) => {
+
+        snapshot
+          .docChanges()
+          .forEach(
+
+            async (change) => {
+
+              if (
+                change.type !==
+                "added"
+              ) {
+
+                return;
+
+              }
+
+              try {
+
+                await peerConnection
+                  .addIceCandidate(
+
+                    new RTCIceCandidate(
+                      change.doc.data()
+                    )
+
+                  );
+
+              } catch (error) {
+
+                console.error(
+                  "Caller ICE error:",
+                  error
+                );
+
+              }
+
+            }
+
+          );
+
+      }
+
+    );
+
+}
+
+
+function startTimer() {
+
+  if (
+    timerInterval
+  ) {
+
+    return;
+
+  }
+
+  timerInterval =
+    setInterval(
+
+      () => {
+
+        seconds++;
+
+        const minutes =
+          Math.floor(
+            seconds / 60
+          );
+
+        const remainingSeconds =
+          seconds % 60;
+
+        timer.textContent =
+          String(minutes)
+            .padStart(2, "0")
+          +
+          ":"
+          +
+          String(
+            remainingSeconds
+          )
+            .padStart(2, "0");
+
+      },
+
+      1000
+
+    );
+
+}
+
+
+micButton.addEventListener(
+  "click",
+  () => {
+
+    if (
+      !localStream
+    ) {
+
+      return;
 
     }
 
+    localStream
+      .getAudioTracks()
+      .forEach(
+        (track) => {
 
-    function listenForCallerCandidates() {
+          track.enabled =
+            !track.enabled;
 
-      const candidatesRef =
-        collection(
+          micButton.classList.toggle(
+            "off",
+            !track.enabled
+          );
+
+        }
+      );
+
+  }
+);
+
+
+cameraButton.addEventListener(
+  "click",
+  () => {
+
+    if (
+      !localStream
+    ) {
+
+      return;
+
+    }
+
+    localStream
+      .getVideoTracks()
+      .forEach(
+        (track) => {
+
+          track.enabled =
+            !track.enabled;
+
+          cameraButton.classList.toggle(
+            "off",
+            !track.enabled
+          );
+
+        }
+      );
+
+  }
+);
+
+
+/* =====================================================
+   END CALL
+===================================================== */
+
+endButton.addEventListener(
+  "click",
+  () => {
+
+    endCall();
+
+  }
+);
+
+
+/* =====================================================
+   NEXT
+===================================================== */
+
+nextButton.addEventListener(
+  "click",
+  async () => {
+
+    if (
+      leavingCall
+    ) {
+
+      return;
+
+    }
+
+    leavingCall =
+      true;
+
+    nextButton.disabled =
+      true;
+
+    nextButton.textContent =
+      "Next...";
+
+    await finishCurrentCall();
+
+    window.location.href =
+      "index.html";
+
+  }
+);
+
+
+/* =====================================================
+   BACK
+===================================================== */
+
+backButton.addEventListener(
+  "click",
+  () => {
+
+    endCall();
+
+  }
+);
+
+
+/* =====================================================
+   END CALL FUNCTION
+===================================================== */
+
+async function endCall() {
+
+  if (
+    leavingCall
+  ) {
+
+    return;
+
+  }
+
+  leavingCall =
+    true;
+
+  await finishCurrentCall();
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+/* =====================================================
+   FINISH CURRENT CALL
+===================================================== */
+
+async function finishCurrentCall() {
+
+  if (
+    callId
+  ) {
+
+    try {
+
+      await updateDoc(
+
+        doc(
           db,
           "calls",
-          callId,
-          "callerCandidates"
-        );
+          callId
+        ),
 
+        {
 
-      candidateUnsubscribe =
-        onSnapshot(
-          candidatesRef,
-          function(snapshot) {
+          status:
+            "ended",
 
-            snapshot.docChanges()
-              .forEach(
-                async function(change) {
+          endedAt:
+            serverTimestamp()
 
-                  if (
-                    change.type !== "added"
-                  ) {
-
-                    return;
-
-                  }
-
-
-                  try {
-
-                    await peerConnection.addIceCandidate(
-                      new RTCIceCandidate(
-                        change.doc.data()
-                      )
-                    );
-
-                  } catch (error) {
-
-                    console.error(
-                      "Caller ICE error:",
-                      error
-                    );
-
-                  }
-
-                }
-              );
-
-          }
-        );
-
-    }
-
-
-    function startTimer() {
-
-      if (timerInterval) {
-        return;
-      }
-
-
-      timerInterval =
-        setInterval(
-          function() {
-
-            seconds++;
-
-
-            const minutes =
-              Math.floor(
-                seconds / 60
-              );
-
-
-            const remainingSeconds =
-              seconds % 60;
-
-
-            timer.textContent =
-              String(minutes)
-                .padStart(2, "0")
-              + ":" +
-              String(remainingSeconds)
-                .padStart(2, "0");
-
-          },
-          1000
-        );
-
-    }
-
-
-    micButton.addEventListener(
-      "click",
-      function() {
-
-        if (!localStream) {
-          return;
         }
 
+      );
 
-        localStream
-          .getAudioTracks()
-          .forEach(function(track) {
+    } catch (error) {
 
-            track.enabled =
-              !track.enabled;
+      console.error(
+        "End call error:",
+        error
+      );
+
+    }
+
+  }
+
+  cleanup();
+
+}
 
 
-            micButton.classList.toggle(
-              "off",
-              !track.enabled
-            );
+/* =====================================================
+   CLEANUP
+===================================================== */
 
-          });
+function cleanup() {
 
-      }
+  if (
+    timerInterval
+  ) {
+
+    clearInterval(
+      timerInterval
     );
 
+    timerInterval =
+      null;
 
-    cameraButton.addEventListener(
-      "click",
-      function() {
+  }
 
-        if (!localStream) {
-          return;
+  if (
+    callUnsubscribe
+  ) {
+
+    callUnsubscribe();
+
+    callUnsubscribe =
+      null;
+
+  }
+
+  if (
+    candidateUnsubscribe
+  ) {
+
+    candidateUnsubscribe();
+
+    candidateUnsubscribe =
+      null;
+
+  }
+
+  if (
+    localStream
+  ) {
+
+    localStream
+      .getTracks()
+      .forEach(
+        (track) => {
+
+          track.stop();
+
         }
+      );
 
+    localStream =
+      null;
 
-        localStream
-          .getVideoTracks()
-          .forEach(function(track) {
+  }
 
-            track.enabled =
-              !track.enabled;
+  if (
+    peerConnection
+  ) {
 
+    peerConnection.close();
 
-            cameraButton.classList.toggle(
-              "off",
-              !track.enabled
-            );
+    peerConnection =
+      null;
 
-          });
+  }
 
-      }
-    );
+  remoteVideo.srcObject =
+    null;
 
+  localVideo.srcObject =
+    null;
 
-    /* END CALL */
+}
 
-    endButton.addEventListener(
-      "click",
-      function() {
 
-        endCall();
+console.log(
+  "Milo India call.html loaded successfully."
+);
 
-      }
-    );
+  </script></body></html>
 
-
-    /* NEXT */
-
-    nextButton.addEventListener(
-      "click",
-      async function() {
-
-        if (leavingCall) {
-          return;
-        }
-
-
-        leavingCall = true;
-
-        nextButton.disabled = true;
-
-        nextButton.textContent =
-          "Next...";
-
-
-        await finishCurrentCall();
-
-
-        window.location.href =
-          "home.html";
-
-      }
-    );
-
-
-    /* BACK */
-
-    backButton.addEventListener(
-      "click",
-      function() {
-
-        endCall();
-
-      }
-    );
-
-
-    async function endCall() {
-
-      if (leavingCall) {
-        return;
-      }
-
-
-      leavingCall = true;
-
-
-      await finishCurrentCall();
-
-
-      window.location.href =
-        "home.html";
-
-    }
-
-
-    async function finishCurrentCall() {
-
-      try {
-
-        await updateDoc(
-          doc(db, "calls", callId),
-          {
-            status: "ended",
-            endedAt: serverTimestamp()
-          }
-        );
-
-      } catch (error) {
-
-        console.error(
-          "End call error:",
-          error
-        );
-
-      }
-
-
-      cleanup();
-
-    }
-
-
-    function cleanup() {
-
-      if (timerInterval) {
-
-        clearInterval(
-          timerInterval
-        );
-
-        timerInterval = null;
-
-      }
-
-
-      if (callUnsubscribe) {
-
-        callUnsubscribe();
-
-        callUnsubscribe = null;
-
-      }
-
-
-      if (candidateUnsubscribe) {
-
-        candidateUnsubscribe();
-
-        candidateUnsubscribe = null;
-
-      }
-
-
-      if (localStream) {
-
-        localStream
-          .getTracks()
-          .forEach(function(track) {
-
-            track.stop();
-
-          });
-
-        localStream = null;
-
-      }
-
-
-      if (peerConnection) {
-
-        peerConnection.close();
-
-        peerConnection = null;
-
-      }
-
-
-      remoteVideo.srcObject = null;
-
-      localVideo.srcObject = null;
-
-    }
-
-  </script>
-
-</body>
-</html>
+    
